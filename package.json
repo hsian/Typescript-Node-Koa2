@@ -1,0 +1,21 @@
+{
+  "name": "ts-node-koa",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "watch-ts": "tsc -w",
+    "watch-node": "nodemon dist/server.js",
+    "dev": "concurrently -k -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\""
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^12.7.4",
+    "koa": "^2.8.1"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.2",
+    "nodemon": "^1.19.2",
+    "typescript": "^3.6.2"
+  }
+}
