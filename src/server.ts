@@ -1,9 +1,5 @@
+import app from "./app";
 
-const Koa = require('koa');
-const app = new Koa();
+const server = app.listen(3000);
 
-app.use(async (ctx: any) => {
-  ctx.body = 'Hello World';
-});
-
-app.listen(3000);
+export default server;
