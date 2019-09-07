@@ -7,11 +7,10 @@ import User from "../models/user";
 
 export default class UserController {
 
-    
+    @authorize()
     @Get("/users")
-    @authorize
     async getUser(ctx:any, next:any){
-        
+        ctx.body = '123'
     }
 
     @Post("/users")
