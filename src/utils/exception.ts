@@ -10,7 +10,7 @@ export default class Exception extends Error {
         return this._statusCode;
     }
 
-    toObject(): Object {
+    public toObject(): Object {
         return {
             statusCode: this._statusCode,
             message: this.message

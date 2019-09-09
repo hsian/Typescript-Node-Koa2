@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {createConnection} from "typeorm";
 
-import Models from "../../api/config/models";
+import Models from "../../api/models.Collection";
 
 export default async function connectionDatabse(){
     const connection = await createConnection({
