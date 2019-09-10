@@ -3,7 +3,7 @@ import fs from "fs";
 
 import { BaseContext } from "koa";
 import {getRepository} from "typeorm";
-import Upload from "../models/upload";
+import Upload from "../entity/upload";
 import { Post } from "../../../middleware/request";
 import authorize from "../../../middleware/authorize";
 import Exception from "../../../utils/exception";
@@ -19,7 +19,7 @@ export default class UploadController {
         try{
             const file = ctx.request.files.file
             const fileType = file.type.split("\/")[1] || "";
-            const filePath = `/uploads/IMG'${Date.now()}.${fileType}`;
+            const filePath = `/uploads/IMG${Date.now()}.${fileType}`;
 
             const reader = fs.createReadStream(file.path);
             const stream = fs.createWriteStream(path.join(

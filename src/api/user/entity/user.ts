@@ -21,4 +21,9 @@ export default class Users {
         length: 10
     })
     nickname: string
+
+    @Column({
+        default: ""
+    })
+    head_img: string
 }

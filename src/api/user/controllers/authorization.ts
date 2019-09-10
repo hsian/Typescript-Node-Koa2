@@ -4,8 +4,7 @@ import { sign, verify } from "jsonwebtoken";
 import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
 import Exception from "../../../utils/exception";
-import User from "../models/user";
-import UserController from "./user";
+import User from "../entity/user";
 import {TOKEN_SECRET} from "../../../config/constant";
 
 export default class Authorization {
@@ -33,16 +32,32 @@ export default class Authorization {
 
     @Post("/register")
     static async register(ctx: BaseContext){
+        const userRepository = getRepository(User);
         const params = ctx.request.body;   
-        const user = await UserController.createUser(params);
+        
+        // build up entity user to be saved
+        const userInstance:User = new User();
+        const userToSaved: User = {
+            ...userInstance,
+            ...params
+        }
+        const username = userToSaved.username;
 
-        if(user){
-            ctx.body = {
-                message: "注册成功",
-                data: user
-            };
-        }else{
-            ctx.body = new Exception(400, '用户名已经存在').toObject();
+        try{
+            const isExsit = await userRepository.findOne({ username });
+
+            if(!isExsit){
+                const user = await userRepository.save(userToSaved);
+                delete user.password;
+                ctx.body = {
+                    message: "注册成功",
+                    data: user
+                };
+            }  else {
+                ctx.body = new Exception(400, '用户名已经存在').toObject();
+            }
+        }catch(err){
+            ctx.body = new Exception(400, '注册失败，请检查参数').toObject();
         }
     }
 

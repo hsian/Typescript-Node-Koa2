@@ -1,15 +1,17 @@
 import "reflect-metadata";
 import {createConnection} from "typeorm";
 
-import Models from "../../api/models.Collection";
-
 export default async function connectionDatabse(){
     const connection = await createConnection({
         type: "sqlite",
-        database: "./temp/mydb.sql",
+        database: "./temp/sqlite.db",
         synchronize: true,
-        logging: false,
-        entities: [...Models]
+        entities: ["dist/api/**/entity/*.js"],
+        logging: ["query", "error"],
+        logger: "file",
+        migrations: [
+            __dirname + "/migrations/*{.js,.ts}"
+        ]
     })
 
     return connection;
