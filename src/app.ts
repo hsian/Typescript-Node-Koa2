@@ -1,18 +1,20 @@
 import Koa from "koa";
-import bodyParser from 'koa-bodyparser';
+import koaBody from 'koa-body';
+import koaStatic from "koa-static";
+import path from "path";
 import connectionDatabase from "./config/database/connection";
 import {router} from "./middleware/request";
-
-import UserController from "./api/user/controllers/user";
-import Authorization from "./api/user/controllers/authorization";
+import { PUBLIC_PATCH } from "./config/constant";
 
 const app = new Koa();
 const db = connectionDatabase();
 
-new UserController();
-new Authorization();
+import ("./api/user/controllers/user").then(Factor => { new Factor.default() });
+import ("./api/user/controllers/authorization").then(Factor => { new Factor.default() });
+import ("./api/upload/controllers/upload").then(Factor => { new Factor.default() });
 
-app.use(bodyParser());
+app.use(koaStatic( PUBLIC_PATCH ));
+app.use(koaBody({ multipart: true }));
 app.use(router.routes())
 
 export default app;

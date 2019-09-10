@@ -19,11 +19,12 @@ export default class Authorization {
         if(user && user.password === password){
             const {password, ...profile} = user;
 
-            console.log(ctx.body = 123)
-
             ctx.body = {
-                token: sign({...profile}, TOKEN_SECRET),
-                user
+                message: "登录成功",
+                data: {
+                    token: sign({...profile}, TOKEN_SECRET),
+                    user: profile
+                }
             };
         }else{
            ctx.body = new Exception(401, "用户不存在").toObject();
@@ -36,7 +37,10 @@ export default class Authorization {
         const user = await UserController.createUser(params);
 
         if(user){
-            ctx.body = user;
+            ctx.body = {
+                message: "注册成功",
+                data: user
+            };
         }else{
             ctx.body = new Exception(400, '用户名已经存在').toObject();
         }
