@@ -1,6 +1,6 @@
 import { BaseContext } from "koa";
 import { getRepository } from "typeorm";
-import { sign, verify } from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
 import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
 import Exception from "../../../utils/exception";
