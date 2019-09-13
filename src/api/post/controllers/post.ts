@@ -26,6 +26,55 @@ export default class PostController {
         }
     }
 
+    @Get("/post_comment/:id")
+    static async getComment(ctx: BaseContext){
+        const postRepository = getRepository(PostEntity);
+        const cmtRepository = getRepository(Comment);
+        const id = +ctx.params.id;
+
+        try{
+            const post = await postRepository.findOne({id});
+            const comments = await cmtRepository.find({ 
+                relations: ["parent", "user"],
+                where: { post, id:11},
+             });
+
+             async function _loop(item: any){
+                const cmtRepository = getRepository(Comment);
+                const p = item.parent;
+                if(p){
+                    const parent: Comment = await cmtRepository.findOne( {id: p.id}, {relations: ["parent"]});
+                   console.log(1111111)
+                    item.parent = parent;
+            
+                    _loop(item.parent);
+                    
+                }
+                return item;
+            }
+            
+
+            const data:any = [];
+            for(let i = 0, item; item = comments[i++];){
+            
+                const _item =   _loop(item).then(res =>{
+                    console.log(res)
+                })
+                console.log(2222222)
+                data.push(_item);
+            }
+            
+             ctx.body = {
+                data
+             }
+
+        }catch(err){
+            console.log(err)
+            ctx.body = new Exception(400, "获取评论失败").toObject();
+        }
+        
+    }
+
     @authorize()
     @Post('/post_comment/:id')
     static async postComment(ctx: BaseContext){
@@ -38,14 +87,24 @@ export default class PostController {
             const post = await postRepository.findOne({id});
 
             if(!post){
-                ctx.body = new Exception(400, "评论失败,检查参数").toObject();
+                ctx.body = new Exception(400, "评论失败，文章不存在").toObject();
                 return;
             }
-            
+
             const cmtToSaved = {
                 ...params,
                 user: ctx.state.user,
                 post
+            }
+            
+            // 回复
+            const pid: number = +params.parent_id;
+            if(pid){
+                const reply: Comment = await cmtRepository.findOne({id: pid});
+
+                if(reply){
+                    cmtToSaved.parent =  reply;
+                }
             }
 
             const data = await cmtRepository.save(cmtToSaved);
@@ -55,6 +114,7 @@ export default class PostController {
                 data,
             }
         }catch(err){
+            console.log(err)
             ctx.body = new Exception(400, "评论失败").toObject();
         }
     }
