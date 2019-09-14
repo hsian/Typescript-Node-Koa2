@@ -6,6 +6,7 @@ import Exception from "../../../utils/exception";
 
 import PostEntity from "../entity/post";
 import Comment from "../entity/comment";
+import User from "../../user/entity/user";
 
 const createCommentsParent = function (){
     const cmtRepository = getRepository(Comment);
@@ -29,11 +30,20 @@ export default class PostController {
         const id = +ctx.params.id;
 
         try{
-            const data = await postRepository.findOne({id}, {relations: ["like_users", "user", "comments"]});
+            const post = await postRepository.findOne({id}, {relations: ["like_users", "user", "comments"]});
+            const {comments, ...props} = post;
+            let data = {}
+
+            if(Array.isArray(comments)){
+                data = {
+                    ...props,
+                    comment_length: comments.length
+                }
+            }
             
             ctx.body = {
-                message: !data ? "文章不存在" : "",
-                data,
+                message: !post ? "文章不存在" : "",
+                data
             }
         }catch(err){
             ctx.body = new Exception(400, "文章不存在").toObject();
@@ -98,6 +108,8 @@ export default class PostController {
 
             const cmtToSaved = {
                 ...params,
+                post_id: id,
+                post_title: post.title,
                 user: ctx.state.user,
                 post
             }
@@ -111,17 +123,58 @@ export default class PostController {
                     cmtToSaved.parent =  reply;
                 }
             }
-
+            
             const data = await cmtRepository.save(cmtToSaved);
 
             ctx.body = {
-                message: "评论发布成功",
-                data,
+                message: "评论发布成功"
             }
         }catch(err){
             console.log(err)
             ctx.body = new Exception(400, "评论失败").toObject();
         }
+    }
+
+    @authorize()
+    @Get('/post_star/:id')
+    static async postStar(ctx: BaseContext){
+        const postRepository = getRepository(PostEntity);
+        const userRepository = getRepository(User);
+        const user = ctx.state.user;
+        const id = +ctx.params.id;
+
+        try{
+            const post = await postRepository.findOne({id});
+            const self = await userRepository.findOne({ id: user.id }, { relations: ['post_star'] });
+
+            if(!post){
+                ctx.body = new Exception(400, "收藏失败，文章不存在").toObject();
+                return;
+            }
+
+            if(self.post_star.some(v => {
+                return v.id === id;
+            })){
+                return ctx.body = {
+                    message: "已收藏"
+                };
+            }
+
+            const userToSaved = {
+                ...self,
+                post_star: [ ...self.post_star, post ]
+            }
+
+            const data = await userRepository.save(userToSaved);
+
+            ctx.body = {
+                message: "收藏成功"
+            }
+        }catch(err){
+            console.log(err);
+            ctx.body = new Exception(400, "收藏失败，文章不存在").toObject();
+        }
+
     }
 
     @authorize()
@@ -184,6 +237,7 @@ export default class PostController {
                 data,
             }
         }catch(err){
+            console.log(err);
             ctx.body = new Exception(400, "文章发布失败，请检查参数").toObject();
         }
     }

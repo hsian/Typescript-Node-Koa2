@@ -1,4 +1,4 @@
-import {Entity, Column, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Entity, Column, OneToMany, ManyToMany, JoinTable, PrimaryGeneratedColumn} from "typeorm";
 import PostComment from "../../post/entity/comment";
 import Post from "../../post/entity/post";
 
@@ -7,12 +7,6 @@ export default class User {
 
     @PrimaryGeneratedColumn()
     id: number;
-
-    @OneToMany(type => PostComment, comment => comment.user)
-    post_comments: PostComment[]
-
-    @OneToMany(type => Post, post => post.user)
-    posts: Comment[]
 
     @Column({unique: true, length: 11})
     username: string;
@@ -25,4 +19,14 @@ export default class User {
 
     @Column({default: ""})
     head_img: string
+
+    @OneToMany(type => PostComment, comment => comment.user)
+    post_comments: PostComment[]
+
+    @OneToMany(type => Post, post => post.user)
+    posts: Comment[]
+
+    @ManyToMany(type => Post)
+    @JoinTable()
+    post_star: Post[];
 }

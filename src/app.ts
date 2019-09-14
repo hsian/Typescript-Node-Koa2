@@ -12,7 +12,6 @@ const db = connectionDatabase();
 import ("./api/user/controllers/user").then(Factor => { new Factor.default() });
 import ("./api/user/controllers/authorization").then(Factor => { new Factor.default() });
 import ("./api/upload/controllers/upload").then(Factor => { new Factor.default() });
-// import ("./api/comment/controllers/comment").then(Factor => { new Factor.default() });
 import ("./api/post/controllers/post").then(Factor => { new Factor.default() });
 
 app.use(koaStatic( PUBLIC_PATCH ));
