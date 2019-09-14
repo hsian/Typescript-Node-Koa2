@@ -7,6 +7,20 @@ import Exception from "../../../utils/exception";
 import PostEntity from "../entity/post";
 import Comment from "../entity/comment";
 
+const createCommentsParent = function (){
+    const cmtRepository = getRepository(Comment);
+
+    return async function _loop(item:any){
+        const p = item.parent;
+        if(p){
+            const parent: Comment = await cmtRepository.findOne( {id: p.id}, {relations: ["parent", "user"]});
+            item.parent = parent;
+            await _loop(item.parent);
+        }
+        return item;
+    }
+}
+
 export default class PostController {
 
     @Get('/post/:id')
@@ -31,37 +45,29 @@ export default class PostController {
         const postRepository = getRepository(PostEntity);
         const cmtRepository = getRepository(Comment);
         const id = +ctx.params.id;
+        let {pageIndex, pageSize} = ctx.request.query;
+
+        pageIndex = pageIndex || 1;
+        pageSize = pageSize || 10;
+
+        const start = (pageIndex - 1) * pageSize;
+        const limit = pageIndex * pageSize;
 
         try{
             const post = await postRepository.findOne({id});
             const comments = await cmtRepository.find({ 
                 relations: ["parent", "user"],
-                where: { post, id:11},
-             });
-
-             async function _loop(item: any){
-                const cmtRepository = getRepository(Comment);
-                const p = item.parent;
-                if(p){
-                    const parent: Comment = await cmtRepository.findOne( {id: p.id}, {relations: ["parent"]});
-                   console.log(1111111)
-                    item.parent = parent;
-            
-                    _loop(item.parent);
-                    
-                }
-                return item;
-            }
-            
+                where: { post },
+                skip: start, 
+                take: limit
+            });
+            const commentsParent = createCommentsParent();
 
             const data:any = [];
             for(let i = 0, item; item = comments[i++];){
-            
-                const _item =   _loop(item).then(res =>{
-                    console.log(res)
-                })
-                console.log(2222222)
-                data.push(_item);
+                // 楼层数据
+                const floor = await commentsParent(item);
+                data.push(floor);
             }
             
              ctx.body = {
@@ -72,7 +78,6 @@ export default class PostController {
             console.log(err)
             ctx.body = new Exception(400, "获取评论失败").toObject();
         }
-        
     }
 
     @authorize()
