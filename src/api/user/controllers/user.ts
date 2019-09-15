@@ -44,6 +44,67 @@ export default class UserController {
     }
 
     @authorize()
+    @Get("/user_follows/:id")
+    static async userFollows(ctx: BaseContext){
+        const userRepository = getRepository(User);
+        const user = ctx.state.user;
+        const id = +ctx.params.id;
+
+        try{
+            const self = await userRepository.findOne({id: user.id}, { relations: ['follows'] });
+            const follow = await userRepository.findOne({id});
+
+            if(!user){
+                return ctx.body = new Exception(401, "关注失败，用户不存在").toObject();
+            }
+
+            const isExist = self.follows.some(v => {
+                return v.id === id;
+            });
+
+            if(isExist){
+                return ctx.body = {
+                    message: "已关注"
+                };
+            }
+
+            const userToSaved = {
+                ...user,
+                follows: [ ...self.follows,  follow]
+            }
+            
+            await userRepository.save(userToSaved)
+
+            ctx.body = {
+                message: "关注成功"
+            }
+
+        }catch(err){
+            console.log(err);
+            ctx.body = new Exception(401, "关注失败").toObject();
+        }
+    }
+
+    @authorize()
+    @Get("/user_follows")
+    static async findUserFollows(ctx: BaseContext){
+        const userRepository = getRepository(User);
+        const {id} =  ctx.state.user;
+
+        try{
+            const user = await userRepository.findOne({id}, { relations: ['follows'] });
+            const data = user.follows;
+
+            ctx.body = {
+                data
+            }
+        }catch(err){
+            console.log(err)
+            ctx.body = new Exception(401, "查询错误").toObject();
+        }
+    }
+
+    @authorize()
     @Get("/user_comments")
     static async findUserComments(ctx: BaseContext){
         const cmtRepository = getRepository(PostComment);
@@ -95,7 +156,7 @@ export default class UserController {
     }
 
     @authorize()
-    @Post("/user/update/:id")
+    @Post("/user_update/:id")
     static async  updateUser(ctx:  BaseContext, next: any){
         const userRepository = getRepository(User);
         const id = +ctx.params.id;

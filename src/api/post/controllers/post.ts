@@ -1,5 +1,5 @@
 import { BaseContext } from "koa";
-import { getRepository } from "typeorm";
+import { getRepository, Like } from "typeorm";
 import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
 import Exception from "../../../utils/exception";
@@ -7,6 +7,7 @@ import Exception from "../../../utils/exception";
 import PostEntity from "../entity/post";
 import Comment from "../entity/comment";
 import User from "../../user/entity/user";
+import Category from "../../category/entity/category";
 
 const createCommentsParent = function (){
     const cmtRepository = getRepository(Comment);
@@ -24,21 +25,61 @@ const createCommentsParent = function (){
 
 export default class PostController {
 
-    @Get('/post/:id')
+    @Get('/post')
     static async findPost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
+        let {pageIndex, pageSize, keyword} = ctx.request.query;
+
+        pageIndex = pageIndex || 1;
+        pageSize = pageSize || 10;
+
+        const start = (pageIndex - 1) * pageSize;
+        const limit = pageIndex * pageSize;
+        const conditions: any = {
+            title: Like(`%${keyword}%`),
+           // relations: ['categories'],
+            //skip: start,
+            //take: limit
+        }
+
+        try{
+            const data = await postRepository.find(conditions);
+
+            ctx.body = {
+                data
+            }
+        }catch(err){
+            ctx.body = new Exception(400, "文章列表获取失败").toObject();
+        }
+    }
+
+    @authorize(false)
+    @Get('/post/:id')
+    static async findPostById(ctx: BaseContext){
+        const postRepository = getRepository(PostEntity);
+        const userRepository = getRepository(User);
         const id = +ctx.params.id;
 
         try{
             const post = await postRepository.findOne({id}, {relations: ["like_users", "user", "comments"]});
             const {comments, ...props} = post;
-            let data = {}
+            const data: any = {...props, has_follow: false};
 
+            // 转换成评论条数
             if(Array.isArray(comments)){
-                data = {
-                    ...props,
-                    comment_length: comments.length
-                }
+                data.comment_length = comments.length;
+            }
+
+            // 判断当前用户是否关注该作者
+            const user = ctx.state.user;
+            
+            if(user){
+                const id = user.id;
+                const self = await userRepository.findOne({id}, {relations: ["follows"]});
+                
+                data.has_follow = self.follows.some(v => {
+                    return v.id === post.user.id;
+                })
             }
             
             ctx.body = {
@@ -239,6 +280,51 @@ export default class PostController {
         }catch(err){
             console.log(err);
             ctx.body = new Exception(400, "文章发布失败，请检查参数").toObject();
+        }
+    }
+
+    @authorize()
+    @Post("/post_update/:id")
+    static async updatePost(ctx: BaseContext){
+        const postRepository = getRepository(PostEntity);
+        const cateRepository = getRepository(Category);
+        const params = ctx.request.body;  
+        const id = +ctx.params.id;
+
+        try{
+            const post = await postRepository.findOne({id}, {relations: ['like_users']});
+
+            if(!post){
+                ctx.body = new Exception(400, "编辑文章失败，文章不存在").toObject();
+                return;
+            }
+
+            // categories是栏目id的集合
+            const {categories, ...props} = params;
+
+            if(categories && Array.isArray(categories)){
+                props.categories = [];
+
+                for(let i = 0, cid; cid = categories[i++];){
+                    const c = await cateRepository.findOne({id: cid});
+                    props.categories.push(c);
+                }
+            }
+
+            const postToSaved = {
+                id,
+                ...props
+            }
+
+            await postRepository.save(postToSaved);
+
+            ctx.body = {
+                message: "文章编辑成功"
+            }
+
+        }catch(err){
+            console.log(err);
+            ctx.body = new Exception(400, "编辑文章失败，请检查参数").toObject();
         }
     }
 }

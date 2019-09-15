@@ -20,6 +20,10 @@ export default class User {
     @Column({default: ""})
     head_img: string
 
+    @ManyToMany(type => User)
+    @JoinTable()
+    follows: User[]
+
     @OneToMany(type => PostComment, comment => comment.user)
     post_comments: PostComment[]
 
