@@ -11,7 +11,7 @@ import Category from "../../category/entity/category";
 
 const createCommentsParent = function (){
     const cmtRepository = getRepository(Comment);
-
+    
     return async function _loop(item:any){
         const p = item.parent;
         if(p){
@@ -25,25 +25,106 @@ const createCommentsParent = function (){
 
 export default class PostController {
 
+    @authorize(false)
     @Get('/post')
     static async findPost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
-        let {pageIndex, pageSize, keyword} = ctx.request.query;
+        let {pageIndex, pageSize, category: cid, keyword} = ctx.request.query;
 
         pageIndex = pageIndex || 1;
         pageSize = pageSize || 10;
 
         const start = (pageIndex - 1) * pageSize;
         const limit = pageIndex * pageSize;
-        const conditions: any = {
-            title: Like(`%${keyword}%`),
-           // relations: ['categories'],
-            //skip: start,
-            //take: limit
+
+        try{ 
+            let data: any = [];
+            // 如果cid为0，表示获取关注的文章
+            if(cid == 0 && ctx.state.user){
+                const uid = ctx.state.user.id;
+                const userRepository = getRepository(User);
+                const user = await userRepository.findOne({id: uid}, { relations: ['follows'] });
+                
+                for(let i = 0, item; item = user.follows[i++];){
+                    const res = await postRepository
+                    .createQueryBuilder('post')
+                    .innerJoinAndSelect(
+                        'post.user',
+                        'user',
+                        'user.id = :follow',
+                        { follow: item.id }
+                    )
+                    .leftJoinAndSelect(
+                        'post.categories',
+                        'category'
+                    )
+                    .leftJoinAndSelect(
+                        'post.comments',
+                        'comment'
+                    )
+                    .leftJoinAndSelect(
+                        'post.cover',
+                        'upload'
+                    )
+                    .getMany();
+
+                    data = data.concat(res);
+                }
+                
+                data = data.slice(start, limit);
+
+            }else{
+                const last_arg:any = cid ? { categoryId: cid } : '';
+                data = await postRepository
+                .createQueryBuilder('post')
+                .innerJoinAndSelect(
+                    'post.categories',
+                    'category',
+                    cid ? 'category.id = :categoryId' : '', 
+                    last_arg, 
+                )        
+                .leftJoinAndSelect(
+                    'post.user',
+                    'user'
+                )
+                .leftJoinAndSelect(
+                    'post.comments',
+                    'comment'
+                )
+                .leftJoinAndSelect(
+                    'post.cover',
+                    'upload'
+                )
+                .skip(start)
+                .take(limit)
+                .getMany();
+            }
+
+            data = data.map( (v:any) => {
+                const {comments, ...props} = v;
+                props.comment_length = comments.length;
+                return props;
+            })
+
+            ctx.body = {
+                data
+            }
+        }catch(err){
+            console.log(err)
+            ctx.body = new Exception(400, "文章列表获取失败").toObject();
         }
+    }
+
+    @Get("/post_search")
+    static async findPostByKeyword(ctx: BaseContext){
+        const postRepository = getRepository(PostEntity);
+        const {keyword} = ctx.request.query;
 
         try{
-            const data = await postRepository.find(conditions);
+            // 未分页
+            const data = await postRepository.find({
+                title: Like(`%${keyword}%`)
+            });
 
             ctx.body = {
                 data
@@ -261,10 +342,22 @@ export default class PostController {
     @Post('/post')
     static async createPost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
+        const cateRepository = getRepository(Category);
         const params = ctx.request.body;  
+        // categories是栏目id的集合
+        const {categories, ...props} = params;
+
+        if(categories && Array.isArray(categories)){
+            props.categories = [];
+
+            for(let i = 0, cid; cid = categories[i++];){
+                const c = await cateRepository.findOne({id: cid});
+                props.categories.push(c);
+            }
+        }
 
         const postToSaved = {
-            ...params,
+            ...props,
             user: ctx.state.user,
             comments: [],
             like_users: []

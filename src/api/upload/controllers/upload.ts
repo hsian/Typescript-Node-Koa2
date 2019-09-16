@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs";
+import fsa from "fs-extra";
 
 import { BaseContext } from "koa";
 import {getRepository} from "typeorm";
@@ -19,7 +20,17 @@ export default class UploadController {
         try{
             const file = ctx.request.files.file
             const fileType = file.type.split("\/")[1] || "";
-            const filePath = `/uploads/IMG${Date.now()}.${fileType}`;
+            let filePath = ""
+
+            if(['jpg', 'jpeg', 'jiff', 'png', 'gif'].indexOf(fileType) > -1){
+                fsa.ensureDirSync(path.join(PUBLIC_PATCH,`/uploads/image`));
+                filePath = `/uploads/image/IMG${Date.now()}.${fileType}`;
+            }else if(['mp4', 'mp3', 'avi', 'rmvb'].indexOf(fileType) > -1){
+                fsa.ensureDirSync(path.join(PUBLIC_PATCH,`/uploads/media`));
+                filePath = `/uploads/media/MEDIA${Date.now()}.${fileType}`;
+            }else{
+                return ctx.body = new Exception(400, '未知的文件格式').toObject();
+            }
 
             const reader = fs.createReadStream(file.path);
             const stream = fs.createWriteStream(path.join(
@@ -39,7 +50,8 @@ export default class UploadController {
                 data
             }
         }catch(err){
-            ctx.body = new Exception(400, '图片上传失败').toObject();
+            console.log(err)
+            ctx.body = new Exception(400, '文件上传失败').toObject();
         }
     }
 }

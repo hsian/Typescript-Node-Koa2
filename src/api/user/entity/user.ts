@@ -30,6 +30,9 @@ export default class User {
     @OneToMany(type => Post, post => post.user)
     posts: Comment[]
 
+    @OneToMany(type => Post, post => post.like_users)
+    like_posts: Post[]
+
     @ManyToMany(type => Post)
     @JoinTable()
     post_star: Post[];

@@ -13,7 +13,7 @@ export default class Category {
     @Column({type: "int", default: 0})
     is_top:  number;
 
-    @ManyToMany(type => Post, post => post.categories)
+    @ManyToMany(type => Post, post=> post.categories)
     @JoinTable()
-    posts: Post[]
+    posts: Post[];
 }
