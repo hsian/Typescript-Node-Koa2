@@ -29,7 +29,8 @@ export default class PostController {
     @Get('/post')
     static async findPost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
-        let {pageIndex, pageSize, category: cid, keyword} = ctx.request.query;
+        let {pageIndex, pageSize, category, keyword} = ctx.request.query;
+        const cid = +category;
 
         pageIndex = pageIndex || 1;
         pageSize = pageSize || 10;
@@ -38,9 +39,10 @@ export default class PostController {
         const limit = pageIndex * pageSize;
 
         try{ 
+
             let data: any = [];
             // 如果cid为0，表示获取关注的文章
-            if(cid == 0 && ctx.state.user){
+            if(cid === 0 && ctx.state.user){
                 const uid = ctx.state.user.id;
                 const userRepository = getRepository(User);
                 const user = await userRepository.findOne({id: uid}, { relations: ['follows'] });
@@ -74,13 +76,15 @@ export default class PostController {
                 data = data.slice(start, limit);
 
             }else{
-                const last_arg:any = cid ? { categoryId: cid } : '';
+                const last_arg:any = cid && cid !== 999  ? { categoryId: cid } : '';
+                const three_arg = cid && cid !== 999 ? 'category.id = :categoryId' : '';
+                
                 data = await postRepository
                 .createQueryBuilder('post')
                 .innerJoinAndSelect(
                     'post.categories',
                     'category',
-                    cid ? 'category.id = :categoryId' : '', 
+                    three_arg, 
                     last_arg, 
                 )        
                 .leftJoinAndSelect(

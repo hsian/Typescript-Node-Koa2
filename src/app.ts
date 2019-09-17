@@ -1,7 +1,6 @@
 import Koa from "koa";
 import koaBody from 'koa-body';
 import koaStatic from "koa-static";
-import path from "path";
 import connectionDatabase from "./config/database/connection";
 import {router} from "./middleware/request";
 import { PUBLIC_PATCH } from "./config/constant";

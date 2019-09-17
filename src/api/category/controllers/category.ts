@@ -9,11 +9,26 @@ import Category from "../entity/category";
 
 export default class CategoryController {
 
+    @authorize(false)
     @Get("/category")
     static async findCategories(ctx: BaseContext){
         const cateRepository = getRepository(Category);
+        const data:any = await cateRepository.find();
+        const user = ctx.state.user;
 
-        const data = await cateRepository.find();
+        data.unshift({
+            id: 999,
+            name: "头条",
+            is_top: 1
+        });
+
+        if(user){
+            data.unshift({
+                id: 0,
+                name: "关注",
+                is_top: 1
+            });
+        }
 
         ctx.body = {
             data
@@ -42,6 +57,5 @@ export default class CategoryController {
             console.log(err);
             ctx.body = new Exception(400, "栏目添加失败，请检查参数").toObject();
         }
-        
     }
 }
