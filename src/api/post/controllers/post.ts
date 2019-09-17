@@ -413,6 +413,8 @@ export default class PostController {
                 ...props
             }
 
+            console.log(postToSaved)
+
             await postRepository.save(postToSaved);
 
             ctx.body = {
