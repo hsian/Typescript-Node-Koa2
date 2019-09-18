@@ -28,7 +28,7 @@ export default class User {
     post_comments: PostComment[]
 
     @OneToMany(type => Post, post => post.user)
-    posts: Comment[]
+    posts: Post[]
 
     @OneToMany(type => Post, post => post.like_users)
     like_posts: Post[]

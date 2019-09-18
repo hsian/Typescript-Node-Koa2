@@ -46,7 +46,7 @@ export default class UploadController {
             const data = await uploadRepository.save(fileToSaved)
 
             ctx.body = {
-                message: "图片上传成功",
+                message: "文件上传成功",
                 data
             }
         }catch(err){

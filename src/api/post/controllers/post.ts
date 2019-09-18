@@ -122,13 +122,38 @@ export default class PostController {
     @Get("/post_search")
     static async findPostByKeyword(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
-        const {keyword} = ctx.request.query;
+        let {keyword, pageIndex, pageSize} = ctx.request.query;
+
+        pageIndex = pageIndex || 1;
+        pageSize = pageSize || 10;
+
+        const start = (pageIndex - 1) * pageSize;
+        const limit = pageIndex * pageSize;
 
         try{
             // 未分页
-            const data = await postRepository.find({
-                title: Like(`%${keyword}%`)
-            });
+            // const data = await postRepository.find({
+            //     title: Like(`%${keyword}%`),
+            // });
+
+            const data = await postRepository
+            .createQueryBuilder("post")
+            .where("post.title like :keyword", {keyword: '%' + keyword + '%' })
+            .leftJoinAndSelect(
+                'post.user',
+                'user'
+            )
+            .leftJoinAndSelect(
+                'post.comments',
+                'comment'
+            )
+            .leftJoinAndSelect(
+                'post.cover',
+                'upload'
+            )
+            .skip(start)
+            .take(limit)
+            .getMany();
 
             ctx.body = {
                 data
@@ -331,11 +356,10 @@ export default class PostController {
                 like_users: [...post.like_users, user]
             }
 
-            const data = await postRepository.save(postToSaved);
+            await postRepository.save(postToSaved);
 
             ctx.body = {
                 message: "点赞成功",
-                data
             }
         }catch(err){
             ctx.body = new Exception(400, "点赞失败").toObject();
