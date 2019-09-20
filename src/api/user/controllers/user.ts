@@ -119,7 +119,7 @@ export default class UserController {
 
         try{
             const data = await cmtRepository.find({ 
-                relations: ['post'],
+                relations: ['post', 'parent', 'parent.user'],
                 where: { user: id },
                 skip: start, 
                 take: limit
@@ -142,7 +142,9 @@ export default class UserController {
         const {id} =  ctx.state.user;
 
         try{
-            const user = await userRepository.findOne({ id }, { relations: ['post_star'] });
+            const user = await userRepository.findOne({ id }, { 
+                relations: ['post_star', 'post_star.cover'] 
+            });
             const {post_star} = user;
             
             ctx.body = {

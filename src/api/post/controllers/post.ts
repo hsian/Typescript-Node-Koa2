@@ -163,6 +163,25 @@ export default class PostController {
         }
     }
 
+    @Get("/post_search_recommend")
+    static async findPostRecommend(ctx: BaseContext){
+        const postRepository = getRepository(PostEntity);
+        let {keyword} = ctx.request.query;
+
+        try{
+            // 未分页
+            const data = await postRepository.find({
+                title: Like(`%${keyword}%`),
+            });
+
+            ctx.body = {
+                data
+            }
+        }catch(err){
+            ctx.body = new Exception(400, "文章列表获取失败").toObject();
+        }
+    }
+
     @authorize(false)
     @Get('/post/:id')
     static async findPostById(ctx: BaseContext){

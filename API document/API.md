@@ -363,6 +363,44 @@ localhost:3000/post_search?keyword=美女&pageIndex=1&pageSize=2
 
 
 
+### 搜索推荐
+
+> 接口类型:【GET】
+>
+> 接口地址: 
+
+```
+/post_search_recommend
+```
+
+
+
+> 参数
+
+| 参数    | 默认值 | 必传 | 说明       |
+| ------- | ------ | ---- | ---------- |
+| keyword | 空     | 否   | 搜索关键字 |
+
+
+
+> 例子
+
+```
+localhost:3000/post_search_recommend?keyword=美女
+```
+
+
+
+> 返回
+
+```js
+{
+    "data": []
+}
+```
+
+
+
 ### 文章详情
 
 > 接口类型:【GET】
