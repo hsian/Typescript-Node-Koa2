@@ -190,9 +190,16 @@ export default class PostController {
         const id = +ctx.params.id;
 
         try{
-            const post = await postRepository.findOne({id}, {relations: ["like_users", "user", "comments"]});
-            const {comments, ...props} = post;
-            const data: any = {...props, has_follow: false};
+            const post = await postRepository.findOne({id}, {
+                relations: ["like_users", "user", "comments"]
+            });
+            const {comments, like_users, ...props} = post;
+            const data: any = {
+                ...props, 
+                has_follow: false, 
+                has_star: false,
+                has_like: false
+            };
 
             // 转换成评论条数
             if(Array.isArray(comments)){
@@ -203,9 +210,22 @@ export default class PostController {
             const user = ctx.state.user;
             
             if(user){
-                const id = user.id;
-                const self = await userRepository.findOne({id}, {relations: ["follows"]});
+                const uid = user.id;
+
+                if(Array.isArray(like_users)){
+                    data.has_like = like_users.some(v => {
+                        return v.id === uid;
+                    })
+                }
+
+                const self = await userRepository.findOne({id: uid}, {
+                    relations: ["follows", "post_star"]
+                });
                 
+                data.has_star = self.post_star.some(v => {
+                    return v.id === id;
+                })
+
                 data.has_follow = self.follows.some(v => {
                     return v.id === post.user.id;
                 })

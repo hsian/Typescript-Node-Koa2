@@ -1,4 +1,4 @@
-import {Entity, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, PrimaryGeneratedColumn} from "typeorm";
+import {Entity, Column, CreateDateColumn, ManyToOne, OneToMany, ManyToMany, JoinTable, PrimaryGeneratedColumn} from "typeorm";
 import User from "../../user/entity/user";
 import Category from "../../category/entity/category";
 import Upload from "../../upload/entity/upload";
@@ -18,6 +18,9 @@ export default class Post {
 
     @Column({type: 'int', default: 1})
     type: number
+
+    // @CreateDateColumn({default: Date.now()})
+    // create_time: Date;
 
     @ManyToMany(type => Upload)
     @JoinTable()
