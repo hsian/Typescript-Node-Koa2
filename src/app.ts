@@ -1,6 +1,8 @@
 import Koa from "koa";
 import koaBody from 'koa-body';
 import koaStatic from "koa-static";
+import cors from "koa2-cors";
+
 import connectionDatabase from "./config/database/connection";
 import {router} from "./middleware/request";
 import { PUBLIC_PATCH } from "./config/constant";
@@ -16,6 +18,7 @@ import ("./api/category/controllers/category").then(Factor => { new Factor.defau
 
 app.use(koaStatic( PUBLIC_PATCH ));
 app.use(koaBody({ multipart: true }));
+app.use(cors());
 app.use(router.routes())
 
 export default app;
