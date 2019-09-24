@@ -147,6 +147,7 @@ http://localhost:3000/list?pageIndex=1&pageSize=10
 | password | 空     | 否   | 密码   |
 | nickname | 空     | 否   | 昵称   |
 | head_img | 空     | 否   | 头像   |
+| gender   | 空     | 否   | 性别   |
 
 
 
