@@ -309,6 +309,8 @@ export default class PostController {
             if(pid){
                 const reply: Comment = await cmtRepository.findOne({id: pid});
 
+                console.log(reply, 123123123)
+
                 if(reply){
                     cmtToSaved.parent =  reply;
                 }

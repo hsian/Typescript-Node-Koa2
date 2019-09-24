@@ -115,8 +115,9 @@ http://localhost:3000/list?pageIndex=1&pageSize=10
         "password": "123",
         "nickname": "官方认证火星网友",
         "head_img": "",					// 头像
+        "gender": 1,					// 性别，男1，女0
         "post_comments": 0,				// 发布评论条数
-        "post_star": 0					// 收藏文章条数
+        "post_star": 0,					// 收藏文章条数
     }
 }
 ```
@@ -187,6 +188,38 @@ http://localhost:3000/list?pageIndex=1&pageSize=10
 ```js
 {
     "message": "关注成功"
+}
+```
+
+
+
+### 取消关注用户
+
+> 接口类型:【GET】
+>
+> 需要验证:【Authorization 】
+>
+> 接口地址: 
+
+```
+/user_unfollow/:id
+```
+
+
+
+> 参数
+
+| 参数 | 默认值 | 必传 | 说明         |
+| ---- | ------ | ---- | ------------ |
+| :id  | 空     | 是   | 关注的用户id |
+
+
+
+> 返回
+
+```js
+{
+    "message": "取消关注成功"
 }
 ```
 
@@ -277,7 +310,10 @@ http://localhost:3000/list?pageIndex=1&pageSize=10
             "id": 1,
             "title": "阿信分享《说好不哭》幕后故事：只听一次就配唱",
             "content": "",
-            "type": 1
+            "type": 1,		// 文章类型
+            "cover": [], 	// 封面
+            "user": {},  	// 文章作者
+            "comments": [] 	// 文章评论
         }
     ]
 }

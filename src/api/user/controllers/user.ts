@@ -58,7 +58,7 @@ export default class UserController {
                 return ctx.body = new Exception(401, "关注失败，用户不存在").toObject();
             }
 
-            const isExist = self.follows.some(v => {
+            const isExist = self.follows.some((v: any) => {
                 return v.id === id;
             });
 
@@ -82,6 +82,48 @@ export default class UserController {
         }catch(err){
             console.log(err);
             ctx.body = new Exception(401, "关注失败").toObject();
+        }
+    }
+
+    @authorize()
+    @Get("/user_unfollow/:id")
+    static async userUnfollow(ctx: BaseContext){
+        const userRepository = getRepository(User);
+        const user = ctx.state.user;
+        const id = +ctx.params.id;
+
+        try{
+            const self = await userRepository.findOne({id: user.id}, { relations: ['follows'] });
+            const follow = await userRepository.findOne({id});
+
+            if(!user){
+                return ctx.body = new Exception(401, "关注失败，用户不存在").toObject();
+            }
+
+            const restFollows = self.follows.filter((v: any) => {
+                return v.id !== id;
+            });
+
+            if(restFollows.length === self.follows.length ){
+                return ctx.body = {
+                    message: "未关注该用户"
+                };
+            }
+
+            const userToSaved = {
+                ...user,
+                follows: restFollows
+            }
+            
+            await userRepository.save(userToSaved)
+
+            ctx.body = {
+                message: "取消关注成功"
+            }
+
+        }catch(err){
+            console.log(err);
+            ctx.body = new Exception(401, "取消关注失败").toObject();
         }
     }
 
@@ -143,7 +185,7 @@ export default class UserController {
 
         try{
             const user = await userRepository.findOne({ id }, { 
-                relations: ['post_star', 'post_star.cover'] 
+                relations: ['post_star', 'post_star.cover', 'post_star.user', 'post_star.comments'] 
             });
             const {post_star} = user;
             

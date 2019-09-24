@@ -20,6 +20,9 @@ export default class User {
     @Column({default: ""})
     head_img: string
 
+    @Column({type: "int", default: 1})
+    gender: number;
+
     @ManyToMany(type => User)
     @JoinTable()
     follows: User[]
