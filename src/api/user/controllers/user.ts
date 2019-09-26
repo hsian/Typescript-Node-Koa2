@@ -157,14 +157,14 @@ export default class UserController {
         pageSize = pageSize || 10;
 
         const start = (pageIndex - 1) * pageSize;
-        const limit = pageIndex * pageSize;
+        // const limit = pageIndex * pageSize;
 
         try{
             const data = await cmtRepository.find({ 
                 relations: ['post', 'parent', 'parent.user'],
                 where: { user: id },
                 skip: start, 
-                take: limit
+                take: pageSize
             })
 
             ctx.body = {

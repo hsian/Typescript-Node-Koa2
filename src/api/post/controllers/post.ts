@@ -78,6 +78,8 @@ export default class PostController {
             }else{
                 const last_arg:any = cid && cid !== 999  ? { categoryId: cid } : '';
                 const three_arg = cid && cid !== 999 ? 'category.id = :categoryId' : '';
+
+                console.log(start, limit)
                 
                 data = await postRepository
                 .createQueryBuilder('post')
@@ -100,7 +102,7 @@ export default class PostController {
                     'upload'
                 )
                 .skip(start)
-                .take(limit)
+                .take(pageSize)
                 .getMany();
             }
 
@@ -128,7 +130,6 @@ export default class PostController {
         pageSize = pageSize || 10;
 
         const start = (pageIndex - 1) * pageSize;
-        const limit = pageIndex * pageSize;
 
         try{
             // 未分页
@@ -152,7 +153,7 @@ export default class PostController {
                 'upload'
             )
             .skip(start)
-            .take(limit)
+            .take(pageSize)
             .getMany();
 
             ctx.body = {
@@ -251,7 +252,7 @@ export default class PostController {
         pageSize = pageSize || 10;
 
         const start = (pageIndex - 1) * pageSize;
-        const limit = pageIndex * pageSize;
+        //const limit = pageIndex * pageSize;
 
         try{
             const post = await postRepository.findOne({id});
@@ -259,7 +260,7 @@ export default class PostController {
                 relations: ["parent", "user"],
                 where: { post },
                 skip: start, 
-                take: limit
+                take: pageSize
             });
             const commentsParent = createCommentsParent();
 
