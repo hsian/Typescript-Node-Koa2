@@ -78,8 +78,6 @@ export default class PostController {
             }else{
                 const last_arg:any = cid && cid !== 999  ? { categoryId: cid } : '';
                 const three_arg = cid && cid !== 999 ? 'category.id = :categoryId' : '';
-
-                console.log(start, limit)
                 
                 data = await postRepository
                 .createQueryBuilder('post')
@@ -476,8 +474,6 @@ export default class PostController {
                 id,
                 ...props
             }
-
-            console.log(postToSaved)
 
             await postRepository.save(postToSaved);
 
