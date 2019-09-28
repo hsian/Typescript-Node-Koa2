@@ -214,7 +214,9 @@ export default class PostController {
                 if(Array.isArray(like_users)){
                     data.has_like = like_users.some(v => {
                         return v.id === uid;
-                    })
+                    });
+
+                    data.like_length = like_users.length;
                 }
 
                 const self = await userRepository.findOne({id: uid}, {
@@ -341,23 +343,28 @@ export default class PostController {
                 return;
             }
 
-            if(self.post_star.some(v => {
-                return v.id === id;
-            })){
-                return ctx.body = {
-                    message: "已收藏"
-                };
-            }
+            const restPost = self.post_star.filter(v => {
+                return v.id !== post.id;
+            });
+            const isStar = restPost.length === self.post_star.length;
+
+            // if(self.post_star.some(v => {
+            //     return v.id === id;
+            // })){
+            //     return ctx.body = {
+            //         message: "已收藏"
+            //     };
+            // }
 
             const userToSaved = {
                 ...self,
-                post_star: [ ...self.post_star, post ]
+                post_star: isStar ? [...self.post_star, post] :  restPost
             }
 
             const data = await userRepository.save(userToSaved);
 
             ctx.body = {
-                message: "收藏成功"
+                message: isStar ? "收藏成功" : "取消成功",
             }
         }catch(err){
             console.log(err);
@@ -381,23 +388,28 @@ export default class PostController {
                 return;
             }
 
-            if(post.like_users.some(v => {
-                return v.id === user.id;
-            })){
-                return ctx.body = {
-                    message: "已经点赞"
-                };
-            }
+            const restUsers = post.like_users.filter(v => {
+                return v.id !== user.id;
+            });
+            const isLike = restUsers.length === post.like_users.length;
+
+            // if(post.like_users.some(v => {
+            //     return v.id === user.id;
+            // })){
+            //     return ctx.body = {
+            //         message: "已经点赞"
+            //     };
+            // }
 
             const postToSaved = {
                 ...post,
-                like_users: [...post.like_users, user]
+                like_users: isLike ? [...post.like_users, user] :  restUsers
             }
 
             await postRepository.save(postToSaved);
 
             ctx.body = {
-                message: "点赞成功",
+                message: isLike ? "点赞成功" : "取消成功",
             }
         }catch(err){
             ctx.body = new Exception(400, "点赞失败").toObject();
