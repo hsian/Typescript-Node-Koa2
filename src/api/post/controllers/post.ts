@@ -190,7 +190,7 @@ export default class PostController {
 
         try{
             const post = await postRepository.findOne({id}, {
-                relations: ["like_users", "user", "comments"]
+                relations: ["like_users", "user", "comments", "cover"]
             });
             const {comments, like_users, ...props} = post;
             const data: any = {
@@ -258,9 +258,12 @@ export default class PostController {
             const post = await postRepository.findOne({id});
             const comments = await cmtRepository.find({ 
                 relations: ["parent", "user"],
-                where: { post },
+                where: { post},
                 skip: start, 
-                take: pageSize
+                take: pageSize,
+                order: {
+                    id: "DESC"
+                }
             });
             const commentsParent = createCommentsParent();
 
