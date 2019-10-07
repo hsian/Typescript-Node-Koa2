@@ -19,6 +19,9 @@ export default class Post {
     @Column({type: 'int', default: 1})
     type: number
 
+    @Column({type: 'int', default: 1})
+    open: number
+
     // @CreateDateColumn({default: Date.now()})
     // create_time: Date;
 

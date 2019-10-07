@@ -14,7 +14,7 @@ export default async function connectionDatabse(){
         ]
     })
 
-    await connection.runMigrations();
+    //await connection.runMigrations();
     
     return connection;
 }

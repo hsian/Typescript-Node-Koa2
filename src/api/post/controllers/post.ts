@@ -423,22 +423,10 @@ export default class PostController {
     @Post('/post')
     static async createPost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
-        const cateRepository = getRepository(Category);
         const params = ctx.request.body;  
-        // categories是栏目id的集合
-        const {categories, ...props} = params;
-
-        if(categories && Array.isArray(categories)){
-            props.categories = [];
-
-            for(let i = 0, cid; cid = categories[i++];){
-                const c = await cateRepository.findOne({id: cid});
-                props.categories.push(c);
-            }
-        }
 
         const postToSaved = {
-            ...props,
+            ...params,
             user: ctx.state.user,
             comments: [],
             like_users: []
@@ -461,7 +449,7 @@ export default class PostController {
     @Post("/post_update/:id")
     static async updatePost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
-        const cateRepository = getRepository(Category);
+        // const cateRepository = getRepository(Category);
         const params = ctx.request.body;  
         const id = +ctx.params.id;
 
@@ -474,20 +462,20 @@ export default class PostController {
             }
 
             // categories是栏目id的集合
-            const {categories, ...props} = params;
+            //const {categories, ...props} = params;
 
-            if(categories && Array.isArray(categories)){
-                props.categories = [];
+            // if(categories && Array.isArray(categories)){
+            //     props.categories = [];
 
-                for(let i = 0, cid; cid = categories[i++];){
-                    const c = await cateRepository.findOne({id: cid});
-                    props.categories.push(c);
-                }
-            }
+            //     for(let i = 0, cid; cid = categories[i++];){
+            //         const c = await cateRepository.findOne({id: cid});
+            //         props.categories.push(c);
+            //     }
+            // }
 
             const postToSaved = {
                 id,
-                ...props
+                ...params
             }
 
             await postRepository.save(postToSaved);
