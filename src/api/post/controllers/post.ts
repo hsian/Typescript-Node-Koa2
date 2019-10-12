@@ -41,6 +41,7 @@ export default class PostController {
         try{ 
 
             let data: any = [];
+            let total: number = 0;
             // 如果cid为0，表示获取关注的文章
             if(cid === 0 && ctx.state.user){
                 const uid = ctx.state.user.id;
@@ -50,6 +51,7 @@ export default class PostController {
                 for(let i = 0, item; item = user.follows[i++];){
                     const res = await postRepository
                     .createQueryBuilder('post')
+                    .where("post.open = :open", {open: 1})
                     .innerJoinAndSelect(
                         'post.user',
                         'user',
@@ -68,19 +70,49 @@ export default class PostController {
                         'post.cover',
                         'upload'
                     )
+                    .orderBy("post.id", "DESC") 
                     .getMany();
 
                     data = data.concat(res);
                 }
-                
-                data = data.slice(start, limit);
 
+                total = data.length;
+                data = data.slice(start, limit);
             }else{
                 const last_arg:any = cid && cid !== 999  ? { categoryId: cid } : '';
                 const three_arg = cid && cid !== 999 ? 'category.id = :categoryId' : '';
                 
+                if(!ctx.state.postTotal || cid !== ctx.state.cid ){
+                    // 是否有获取count的方法 ， typeorm?
+                    const firstData = await postRepository
+                    .createQueryBuilder('post')
+                    .where("post.open = :open", {open: 1})
+                    .innerJoinAndSelect(
+                        'post.categories',
+                        'category',
+                        three_arg, 
+                        last_arg, 
+                    )        
+                    .leftJoinAndSelect(
+                        'post.user',
+                        'user'
+                    )
+                    .leftJoinAndSelect(
+                        'post.comments',
+                        'comment'
+                    )
+                    .leftJoinAndSelect(
+                        'post.cover',
+                        'upload'
+                    ).getMany();
+
+                    ctx.state.postTotal = firstData.length;
+                    ctx.state.cid = cid
+                }
+                
                 data = await postRepository
                 .createQueryBuilder('post')
+                .where("post.open = :open", {open: 1})
                 .innerJoinAndSelect(
                     'post.categories',
                     'category',
@@ -99,6 +131,7 @@ export default class PostController {
                     'post.cover',
                     'upload'
                 )
+                .orderBy("post.id", "DESC")
                 .skip(start)
                 .take(pageSize)
                 .getMany();
@@ -111,7 +144,8 @@ export default class PostController {
             })
 
             ctx.body = {
-                data
+                data,
+                total: total || ctx.state.postTotal
             }
         }catch(err){
             console.log(err)
@@ -130,14 +164,35 @@ export default class PostController {
         const start = (pageIndex - 1) * pageSize;
 
         try{
-            // 未分页
+            // 未分页，可能存在无效的文章
             // const data = await postRepository.find({
             //     title: Like(`%${keyword}%`),
             // });
 
-            const data = await postRepository
+            // 获取所有，加上关联条件确保都是有效的文章,是否有count方法？
+            let totalData = await postRepository
             .createQueryBuilder("post")
             .where("post.title like :keyword", {keyword: '%' + keyword + '%' })
+            .andWhere("post.open = :open", {open: 1})
+            .leftJoinAndSelect(
+                'post.user',
+                'user'
+            )
+            .leftJoinAndSelect(
+                'post.comments',
+                'comment'
+            )
+            .leftJoinAndSelect(
+                'post.cover',
+                'upload'
+            )
+            .getMany();
+            
+            // 分页访问。当然可以优化
+            let data = await postRepository
+            .createQueryBuilder("post")
+            .where("post.title like :keyword", {keyword: '%' + keyword + '%' })
+            .andWhere("post.open = :open", {open: 1})
             .leftJoinAndSelect(
                 'post.user',
                 'user'
@@ -154,8 +209,15 @@ export default class PostController {
             .take(pageSize)
             .getMany();
 
+            data = data.map( (v:any) => {
+                const {comments, ...props} = v;
+                props.comment_length = comments.length;
+                return props;
+            })
+
             ctx.body = {
-                data
+                data,
+                total: totalData.length
             }
         }catch(err){
             ctx.body = new Exception(400, "文章列表获取失败").toObject();
@@ -190,7 +252,7 @@ export default class PostController {
 
         try{
             const post = await postRepository.findOne({id}, {
-                relations: ["like_users", "user", "comments", "cover"]
+                relations: ["like_users", "user", "comments", "cover", "categories"]
             });
             const {comments, like_users, ...props} = post;
             const data: any = {
