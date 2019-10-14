@@ -9,9 +9,13 @@ export default async function connectionDatabse(){
         entities: ["dist/api/**/entity/*.js"],
         logging: ["query", "error"],
         logger: "file",
+        migrationsTableName: "migration_table",
         migrations: [
             __dirname + "/migrations/*{.js,.ts}"
-        ]
+        ],
+        cli: {
+            "migrationsDir": "migration"
+        }
     })
 
     //await connection.runMigrations();

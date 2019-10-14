@@ -1,6 +1,7 @@
-import {Entity, Column, OneToMany, ManyToMany, JoinTable, PrimaryGeneratedColumn} from "typeorm";
+import {Entity, Column, OneToMany, ManyToOne, ManyToMany, JoinTable, PrimaryGeneratedColumn} from "typeorm";
 import PostComment from "../../post/entity/comment";
 import Post from "../../post/entity/post";
+import Role from "./role"
 
 @Entity()
 export default class User {
@@ -23,6 +24,9 @@ export default class User {
     @Column({type: "int", default: 1})
     gender: number;
 
+    @ManyToOne(type => Role, role => role.users)
+    role: Role
+
     @ManyToMany(type => User)
     @JoinTable()
     follows: User[]
@@ -39,4 +43,8 @@ export default class User {
     @ManyToMany(type => Post)
     @JoinTable()
     post_star: Post[];
+
+    constructor(){
+        this.head_img = "/uploads/image/IMG1568705287936.jpeg"
+    }
 }

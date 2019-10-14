@@ -8,7 +8,7 @@
     "build-ts": "tsc",
     "start": "npm run build-ts && node dist/server.js",
     "dev": "tsc && concurrently -k -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
-    "migration": "typeorm migration:run",
+    "migration": "typeorm migration:create -n PostRefactoring",
     "test": "jest --coverage --verbose",
     "watch-test": "npm run test -- --watchAll"
   },

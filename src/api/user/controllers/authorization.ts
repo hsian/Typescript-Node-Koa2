@@ -13,7 +13,9 @@ export default class Authorization {
     static async login(ctx: BaseContext){
         const userRepository = getRepository(User);
         const {username, password} = ctx.request.body;  
-        const user:User = await userRepository.findOne({username});
+        const user:User = await userRepository.findOne({username}, {
+            relations: ['role']
+        });
 
         if(user && user.password === password){
             const {password, ...profile} = user;
