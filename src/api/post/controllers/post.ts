@@ -481,7 +481,7 @@ export default class PostController {
         }
     }
 
-    @authorize()
+    @authorize({isAdmin: true})
     @Post('/post')
     static async createPost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
@@ -507,7 +507,7 @@ export default class PostController {
         }
     }
 
-    @authorize()
+    @authorize({isAdmin: true})
     @Post("/post_update/:id")
     static async updatePost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
