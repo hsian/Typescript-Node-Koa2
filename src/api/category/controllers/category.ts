@@ -9,7 +9,7 @@ import Category from "../entity/category";
 
 export default class CategoryController {
 
-    @authorize(false)
+    @authorize({required: false})
     @Get("/category")
     static async findCategories(ctx: BaseContext){
         const cateRepository = getRepository(Category);

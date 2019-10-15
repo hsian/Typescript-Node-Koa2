@@ -1,4 +1,4 @@
-import {Entity, Column, ManyToMany, JoinTable, PrimaryGeneratedColumn} from "typeorm";
+import {Entity, Column, ManyToMany, JoinTable, CreateDateColumn, PrimaryGeneratedColumn} from "typeorm";
 import Post from "../../post/entity/post";
 
 @Entity()
@@ -16,4 +16,7 @@ export default class Category {
     @ManyToMany(type => Post, post=> post.categories)
     @JoinTable()
     posts: Post[];
+
+    @CreateDateColumn()
+    create_date: Date;
 }

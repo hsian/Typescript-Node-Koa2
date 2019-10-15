@@ -22,9 +22,6 @@ export default class Post {
     @Column({type: 'int', default: 1})
     open: number
 
-    // @CreateDateColumn({default: Date.now()})
-    // create_time: Date;
-
     @ManyToMany(type => Upload)
     @JoinTable()
     cover: Upload[];
@@ -42,4 +39,7 @@ export default class Post {
     @ManyToMany(type => Category, category => category.posts)
     @JoinTable()
     categories: Category[];
+
+    @CreateDateColumn()
+    create_date: Date;
 }

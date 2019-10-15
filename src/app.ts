@@ -12,6 +12,7 @@ const db = connectionDatabase();
 
 import ("./api/user/controllers/user").then(Factor => { new Factor.default() });
 import ("./api/user/controllers/authorization").then(Factor => { new Factor.default() });
+import ("./api/user/controllers/role").then(Factor => { new Factor.default() });
 import ("./api/upload/controllers/upload").then(Factor => { new Factor.default() });
 import ("./api/post/controllers/post").then(Factor => { new Factor.default() });
 import ("./api/category/controllers/category").then(Factor => { new Factor.default() });

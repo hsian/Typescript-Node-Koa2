@@ -11,7 +11,7 @@ import PostComment from "../../post/entity/comment";
 export default class UserController {
     // can use this.userDB instead of getRepository(User) without static property
     // https://auth0.com/blog/building-and-securing-a-koa-and-angular2-app-with-jwt/
-   //  private userDB;
+    //  private userDB;
 
     @authorize()
     @Get("/user/:id")
@@ -25,7 +25,9 @@ export default class UserController {
         }
 
         try{
-            const user = await userRepository.findOne({ id }, { relations: ['post_comments', 'post_star'] });
+            const user = await userRepository.findOne({ id }, { 
+                relations: ['post_comments', 'post_star', 'role'] 
+            });
             const {post_comments, post_star, ...props } = user;
             const data = {
                 ...props,

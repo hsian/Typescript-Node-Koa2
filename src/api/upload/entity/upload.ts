@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn} from "typeorm";
+import {Entity, Column, PrimaryGeneratedColumn, CreateDateColumn} from "typeorm";
 
 @Entity()
 export default class Upload {
@@ -11,4 +11,7 @@ export default class Upload {
 
     @Column()
     uid: number;
+
+    @CreateDateColumn()
+    create_date: Date
 }

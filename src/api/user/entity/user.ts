@@ -1,4 +1,4 @@
-import {Entity, Column, OneToMany, ManyToOne, ManyToMany, JoinTable, PrimaryGeneratedColumn} from "typeorm";
+import {Entity, Column, OneToMany, ManyToOne, ManyToMany, JoinTable, PrimaryGeneratedColumn, CreateDateColumn} from "typeorm";
 import PostComment from "../../post/entity/comment";
 import Post from "../../post/entity/post";
 import Role from "./role"
@@ -44,7 +44,10 @@ export default class User {
     @JoinTable()
     post_star: Post[];
 
+    @CreateDateColumn()
+    create_date: Date
+
     constructor(){
-        this.head_img = "/uploads/image/IMG1568705287936.jpeg"
+        this.head_img = "/uploads/image/IMG1568705287936.jpeg";
     }
 }

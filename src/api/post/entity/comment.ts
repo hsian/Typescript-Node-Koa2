@@ -1,4 +1,4 @@
-import {Entity, Column, JoinColumn, OneToOne, ManyToOne,  PrimaryGeneratedColumn} from "typeorm";
+import {Entity, Column, JoinColumn, OneToOne, ManyToOne, CreateDateColumn, PrimaryGeneratedColumn} from "typeorm";
 import User from "../../user/entity/user";
 import Post from "./post";
 
@@ -19,4 +19,7 @@ export default class PostComment {
 
     @ManyToOne(type => Post, post => post.comments)
     post: Post;
+
+    @CreateDateColumn()
+    create_date: Date;
 }

@@ -5,6 +5,7 @@ import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
 import Exception from "../../../utils/exception";
 import User from "../entity/user";
+import Role from "../entity/role";
 import {TOKEN_SECRET} from "../../../config/constant";
 
 export default class Authorization {
@@ -35,13 +36,17 @@ export default class Authorization {
     @Post("/register")
     static async register(ctx: BaseContext){
         const userRepository = getRepository(User);
+        const roleRepository = getRepository(Role);
         const params = ctx.request.body;   
         
+        const role = await roleRepository.findOne({permissions: 1});
+
         // build up entity user to be saved
         const userInstance:User = new User();
         const userToSaved: User = {
             ...userInstance,
-            ...params
+            ...params,
+            role
         }
         const username = userToSaved.username;
 
@@ -63,7 +68,7 @@ export default class Authorization {
         }
     }
 
-    @authorize()
+    @authorize({isAdmin: true})
     @Get("/_users")
     static async getUser(ctx:any, next:any){
         ctx.body = '123'

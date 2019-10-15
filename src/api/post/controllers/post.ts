@@ -25,7 +25,7 @@ const createCommentsParent = function (){
 
 export default class PostController {
 
-    @authorize(false)
+    @authorize({required: false})
     @Get('/post')
     static async findPost(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
@@ -243,7 +243,7 @@ export default class PostController {
         }
     }
 
-    @authorize(false)
+    @authorize({required: false})
     @Get('/post/:id')
     static async findPostById(ctx: BaseContext){
         const postRepository = getRepository(PostEntity);
