@@ -1,6 +1,6 @@
 import {BaseContext} from "koa";
 import { verify } from "jsonwebtoken";
-import Exception from "../utils/exception";
+import Response from "../utils/response";
 import { TOKEN_SECRET } from "../config/constant";
 
 interface Params {
@@ -29,16 +29,16 @@ const authorize = (params = <Params>{}) => {
                         ctx.state.user = verify(token.replace('Bearer ', ''), TOKEN_SECRET);
                         // 是否是管理员
                         if(isAdmin === true && ctx.state.user.role.type !== 'admin'){
-                            return ctx.body = new Exception(401, "用户不是管理员").toObject();
+                            return new Response(403, "用户不是管理员").toObject(ctx);
                         }
                         return next();
                     }
                 }
 
-                return ctx.body = new Exception(401, "用户信息验证失败").toObject();
+                return new Response(403, "用户信息验证失败").toObject(ctx);
             }catch(err){
                 console.log(err);
-                return ctx.body = new Exception(401, "用户信息验证失败").toObject();
+                return new Response(403, "用户信息验证失败").toObject(ctx);
             }
         }
     } 

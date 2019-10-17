@@ -3,7 +3,7 @@ import { getRepository } from "typeorm";
 import { sign } from "jsonwebtoken";
 import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
-import Exception from "../../../utils/exception";
+import Response from "../../../utils/response";
 import User from "../entity/user";
 import Role from "../entity/role";
 import {TOKEN_SECRET} from "../../../config/constant";
@@ -29,7 +29,7 @@ export default class Authorization {
                 }
             };
         }else{
-           ctx.body = new Exception(401, "用户不存在").toObject();
+           return new Response(401, "用户不存在2").toObject(ctx);
         }   
     }
 
@@ -61,10 +61,10 @@ export default class Authorization {
                     data: user
                 };
             }  else {
-                ctx.body = new Exception(400, '用户名已经存在').toObject();
+                return new Response(400, '用户名已经存在').toObject(ctx);
             }
         }catch(err){
-            ctx.body = new Exception(400, '注册失败，请检查参数').toObject();
+            return new Response(400, '注册失败，请检查参数').toObject(ctx);
         }
     }
 

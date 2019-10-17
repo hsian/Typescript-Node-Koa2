@@ -2,7 +2,7 @@ import { BaseContext } from "koa";
 import { getRepository } from "typeorm";
 import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
-import Exception from "../../../utils/exception";
+import Response from "../../../utils/response";
 
 import PostEntity from "../../post/entity/post";
 import Category from "../entity/category";
@@ -55,7 +55,7 @@ export default class CategoryController {
 
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(400, "栏目添加失败，请检查参数").toObject();
+            return new Response(400, "栏目添加失败，请检查参数").toObject(ctx);
         }
     }
 }

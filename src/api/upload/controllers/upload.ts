@@ -7,7 +7,7 @@ import {getRepository} from "typeorm";
 import Upload from "../entity/upload";
 import { Post } from "../../../middleware/request";
 import authorize from "../../../middleware/authorize";
-import Exception from "../../../utils/exception";
+import Exception from "../../../utils/response";
 import { PUBLIC_PATCH } from "../../../config/constant";
 
 export default class UploadController {
@@ -29,7 +29,7 @@ export default class UploadController {
                 fsa.ensureDirSync(path.join(PUBLIC_PATCH,`/uploads/media`));
                 filePath = `/uploads/media/MEDIA${Date.now()}.${fileType}`;
             }else{
-                return ctx.body = new Exception(400, '未知的文件格式').toObject();
+                return new Exception(400, '未知的文件格式').toObject(ctx);
             }
 
             const reader = fs.createReadStream(file.path);
@@ -51,7 +51,7 @@ export default class UploadController {
             }
         }catch(err){
             console.log(err)
-            ctx.body = new Exception(400, '文件上传失败').toObject();
+            return new Exception(400, '文件上传失败').toObject(ctx);
         }
     }
 }

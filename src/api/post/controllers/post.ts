@@ -2,7 +2,7 @@ import { BaseContext } from "koa";
 import { getRepository, Like } from "typeorm";
 import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
-import Exception from "../../../utils/exception";
+import Response from "../../../utils/response";
 
 import PostEntity from "../entity/post";
 import Comment from "../entity/comment";
@@ -149,7 +149,7 @@ export default class PostController {
             }
         }catch(err){
             console.log(err)
-            ctx.body = new Exception(400, "文章列表获取失败").toObject();
+            return new Response(400, "文章列表获取失败").toObject(ctx);
         }
     }
 
@@ -220,7 +220,7 @@ export default class PostController {
                 total: totalData.length
             }
         }catch(err){
-            ctx.body = new Exception(400, "文章列表获取失败").toObject();
+            return new Response(400, "文章列表获取失败").toObject(ctx);
         }
     }
 
@@ -239,7 +239,7 @@ export default class PostController {
                 data
             }
         }catch(err){
-            ctx.body = new Exception(400, "文章列表获取失败").toObject();
+            return new Response(400, "文章列表获取失败").toObject(ctx);
         }
     }
 
@@ -299,7 +299,7 @@ export default class PostController {
                 data
             }
         }catch(err){
-            ctx.body = new Exception(400, "文章不存在").toObject();
+            return new Response(400, "文章不存在").toObject(ctx);
         }
     }
 
@@ -342,7 +342,7 @@ export default class PostController {
 
         }catch(err){
             console.log(err)
-            ctx.body = new Exception(400, "获取评论失败").toObject();
+            return new Response(400, "获取评论失败").toObject(ctx);
         }
     }
 
@@ -358,8 +358,7 @@ export default class PostController {
             const post = await postRepository.findOne({id});
 
             if(!post){
-                ctx.body = new Exception(400, "评论失败，文章不存在").toObject();
-                return;
+                return new Response(400, "评论失败，文章不存在").toObject(ctx);
             }
 
             const cmtToSaved = {
@@ -387,7 +386,7 @@ export default class PostController {
             }
         }catch(err){
             console.log(err)
-            ctx.body = new Exception(400, "评论失败").toObject();
+            return new Response(400, "评论失败").toObject(ctx);
         }
     }
 
@@ -404,7 +403,7 @@ export default class PostController {
             const self = await userRepository.findOne({ id: user.id }, { relations: ['post_star'] });
 
             if(!post){
-                ctx.body = new Exception(400, "收藏失败，文章不存在").toObject();
+                return new Response(400, "收藏失败，文章不存在").toObject(ctx);
                 return;
             }
 
@@ -433,7 +432,7 @@ export default class PostController {
             }
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(400, "收藏失败，文章不存在").toObject();
+            return new Response(400, "收藏失败，文章不存在").toObject(ctx);
         }
 
     }
@@ -449,7 +448,7 @@ export default class PostController {
             const post = await postRepository.findOne({id}, {relations: ['like_users']});
 
             if(!post){
-                ctx.body = new Exception(400, "点赞失败，文章不存在").toObject();
+                return new Response(400, "点赞失败，文章不存在").toObject(ctx);
                 return;
             }
 
@@ -477,7 +476,7 @@ export default class PostController {
                 message: isLike ? "点赞成功" : "取消成功",
             }
         }catch(err){
-            ctx.body = new Exception(400, "点赞失败").toObject();
+            return new Response(400, "点赞失败").toObject(ctx);
         }
     }
 
@@ -503,7 +502,7 @@ export default class PostController {
             }
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(400, "文章发布失败，请检查参数").toObject();
+            return new Response(400, "文章发布失败，请检查参数").toObject(ctx);
         }
     }
 
@@ -519,7 +518,7 @@ export default class PostController {
             const post = await postRepository.findOne({id}, {relations: ['like_users']});
 
             if(!post){
-                ctx.body = new Exception(400, "编辑文章失败，文章不存在").toObject();
+                return new Response(400, "编辑文章失败，文章不存在").toObject(ctx);
                 return;
             }
 
@@ -548,7 +547,7 @@ export default class PostController {
 
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(400, "编辑文章失败，请检查参数").toObject();
+            return new Response(400, "编辑文章失败，请检查参数").toObject(ctx);
         }
     }
 }

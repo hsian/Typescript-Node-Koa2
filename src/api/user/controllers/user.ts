@@ -3,7 +3,7 @@ import {getRepository} from "typeorm";
 
 import { Get, Post } from "../../../middleware/request";
 import authorize from "../../../middleware/authorize";
-import Exception from "../../../utils/exception";
+import Response from "../../../utils/response";
 
 import User from "../entity/user";
 import PostComment from "../../post/entity/comment";
@@ -20,19 +20,19 @@ export default class UserController {
         const id = +ctx.params.id;
 
         if( id !==  ctx.state.user.id){
-            ctx.body = new Exception(401, "用户信息验证失败!").toObject();
-            return;
+            return new Response(403, "用户信息验证失败!").toObject(ctx);
         }
 
         try{
             const user = await userRepository.findOne({ id }, { 
-                relations: ['post_comments', 'post_star', 'role'] 
+                relations: ['post_comments', 'post_star', 'role', 'follows'] 
             });
-            const {post_comments, post_star, ...props } = user;
+            const {post_comments, post_star, follows, ...props } = user;
             const data = {
                 ...props,
                 post_comments: post_comments.length,
-                post_star: post_star.length
+                post_star: post_star.length,
+                post_follows: follows.length
             }
             
             ctx.body = {
@@ -41,7 +41,7 @@ export default class UserController {
             };
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(401, "获取用户信息失败").toObject();
+            return new Response(401, "获取用户信息失败").toObject(ctx);
         }
     }
 
@@ -57,7 +57,7 @@ export default class UserController {
             const follow = await userRepository.findOne({id});
 
             if(!user){
-                return ctx.body = new Exception(401, "关注失败，用户不存在").toObject();
+                return new Response(401, "关注失败，用户不存在").toObject(ctx);
             }
 
             const isExist = self.follows.some((v: any) => {
@@ -83,7 +83,7 @@ export default class UserController {
 
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(401, "关注失败").toObject();
+            return new Response(401, "关注失败").toObject(ctx);
         }
     }
 
@@ -99,7 +99,7 @@ export default class UserController {
             const follow = await userRepository.findOne({id});
 
             if(!user){
-                return ctx.body = new Exception(401, "关注失败，用户不存在").toObject();
+                return new Response(401, "关注失败，用户不存在").toObject(ctx);
             }
 
             const restFollows = self.follows.filter((v: any) => {
@@ -125,7 +125,7 @@ export default class UserController {
 
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(401, "取消关注失败").toObject();
+            return new Response(401, "取消关注失败").toObject(ctx);
         }
     }
 
@@ -144,7 +144,7 @@ export default class UserController {
             }
         }catch(err){
             console.log(err)
-            ctx.body = new Exception(401, "查询错误").toObject();
+            return new Response(401, "查询错误").toObject(ctx);
         }
     }
 
@@ -175,7 +175,7 @@ export default class UserController {
             };
         }catch(err){
             console.log(err)
-            ctx.body = new Exception(401, "查询错误").toObject();
+            return new Response(401, "查询错误").toObject(ctx);
         }
     }
 
@@ -197,7 +197,7 @@ export default class UserController {
             };
         }catch(err){
             console.log(err);
-            ctx.body = new Exception(401, "获取用户信息失败").toObject();
+            return new Response(401, "获取用户信息失败").toObject(ctx);
         }
     }
 
@@ -208,8 +208,7 @@ export default class UserController {
         const id = +ctx.params.id;
 
         if( id !==  ctx.state.user.id){
-            ctx.body = new Exception(401, "用户信息验证失败!").toObject();
-            return;
+            return  new Response(403, "用户信息验证失败!").toObject(ctx);
         }
 
         try{
@@ -227,7 +226,7 @@ export default class UserController {
                 data: user
             };
         }catch(err){
-            ctx.body = new Exception(401, "修改失败，请检查参数名称!").toObject();
+            return new Response(401, "修改失败，请检查参数名称!").toObject(ctx);
         }
     }
 }
