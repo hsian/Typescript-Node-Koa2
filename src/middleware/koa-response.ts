@@ -6,7 +6,7 @@ interface BackRef {
     data?:Object
 }
  
-export default class Response {
+class Response {
     private _statusCode: BackRef['statusCode'];
     private _message: BackRef['message'];
     private _data: BackRef["data"];
@@ -48,3 +48,11 @@ export default class Response {
         }
     }
 }
+
+const _ = (ctx: BaseContext) => {
+    ctx.content = () => {
+        
+    }
+}
+
+export default _;

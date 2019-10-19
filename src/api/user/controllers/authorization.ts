@@ -21,13 +21,11 @@ export default class Authorization {
         if(user && user.password === password){
             const {password, ...profile} = user;
 
-            ctx.body = {
-                message: "登录成功",
-                data: {
-                    token: sign({...profile}, TOKEN_SECRET),
-                    user: profile
-                }
-            };
+            new Response(200, "登录成功", {
+                token: sign({...profile}, TOKEN_SECRET),
+                user: profile
+            }).toObject(ctx);
+
         }else{
            return new Response(401, "用户不存在2").toObject(ctx);
         }   
@@ -68,9 +66,9 @@ export default class Authorization {
         }
     }
 
-    @authorize({isAdmin: true})
+    // @authorize({isAdmin: true})
     @Get("/_users")
     static async getUser(ctx:any, next:any){
-        ctx.body = '123'
+        new Response(200, {a: 1}).toObject(ctx)
     }
 }
