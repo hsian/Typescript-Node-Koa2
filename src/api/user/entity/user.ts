@@ -48,6 +48,41 @@ export default class User {
     create_date: Date
 
     constructor(){
-        this.head_img = "/uploads/image/IMG1568705287936.jpeg";
+        this.head_img = "/uploads/image/default_avatar.jpg";
+    }
+
+    static validate(user: any){
+        const rules: any = {
+            'username': {
+                rule: /^1[0-9]{10}/,
+                err_message: "用户名格式错误",
+            },
+            'password': {
+                rule: /^[0-9A-Za-z_]{6,18}/,
+                err_message: "密码格式错误",
+            },
+            'nickname': {
+                rule: /^[0-9A-Za-z_\u4e00-\u9fa5]{2,6}/,
+                err_message: "昵称格式错误",
+            }
+        }
+
+        let valid = true;
+        let err_message = ""
+        Object.keys(rules).forEach((key: any)=> {
+            if(!valid) return;
+            if(!user[key]){
+                throw new Error(key + ' 值不能为空')
+            }
+            if( !(rules[key].rule.test(user[key])) ){
+                valid = false;
+                err_message = rules[key].err_message
+            }
+        })
+
+        return {
+            valid,
+            err_message
+        }
     }
 }

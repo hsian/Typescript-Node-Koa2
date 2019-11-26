@@ -205,6 +205,7 @@ export default class PostController {
                 'post.cover',
                 'upload'
             )
+            .orderBy("post.id", "DESC")
             .skip(start)
             .take(pageSize)
             .getMany();

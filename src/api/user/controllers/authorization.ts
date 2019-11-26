@@ -1,7 +1,6 @@
 import { BaseContext } from "koa";
 import { getRepository } from "typeorm";
 import { sign } from "jsonwebtoken";
-import authorize from "../../../middleware/authorize";
 import { Get, Post } from "../../../middleware/request";
 import Response from "../../../utils/response";
 import User from "../entity/user";
@@ -27,7 +26,7 @@ export default class Authorization {
             }).toObject(ctx);
 
         }else{
-           return new Response(401, "用户不存在2").toObject(ctx);
+           return new Response(400, "用户或密码错误").toObject(ctx);
         }   
     }
 
@@ -36,23 +35,27 @@ export default class Authorization {
         const userRepository = getRepository(User);
         const roleRepository = getRepository(Role);
         const params = ctx.request.body;   
-        
-        const role = await roleRepository.findOne({permissions: 1});
-
-        // build up entity user to be saved
-        const userInstance:User = new User();
-        const userToSaved: User = {
-            ...userInstance,
-            ...params,
-            role
-        }
-        const username = userToSaved.username;
-
         try{
-            const isExsit = await userRepository.findOne({ username });
+            const role = await roleRepository.findOne({permissions: 1});
 
+            // build up entity user to be saved
+            const userInstance:User = new User();
+            const userToSaved: User = {
+                ...userInstance,
+                ...params,
+                role
+            }
+            const username = userToSaved.username;
+            const validResulte = User.validate(userToSaved);
+            
+            if(validResulte.valid === false){
+                return new Response(400, validResulte.err_message).toObject(ctx);
+            }
+            
+            const isExsit = await userRepository.findOne({ username });
             if(!isExsit){
                 const user = await userRepository.save(userToSaved);
+                console.log(user)
                 delete user.password;
                 ctx.body = {
                     message: "注册成功",
@@ -62,7 +65,7 @@ export default class Authorization {
                 return new Response(400, '用户名已经存在').toObject(ctx);
             }
         }catch(err){
-            return new Response(400, '注册失败，请检查参数').toObject(ctx);
+            return new Response(400, '注册失败，请检查参数', err.message).toObject(ctx);
         }
     }
 
