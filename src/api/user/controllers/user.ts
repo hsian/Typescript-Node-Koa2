@@ -189,9 +189,9 @@ export default class UserController {
             });
             let {post_star} = user;
 
-            post_star = post_star.map(v => {
+            post_star = post_star.map((v:any) => {
                 delete v.user.password;
-                v.comments = v.comments.length;    
+                v.comments = v.comments.length
                 return v;
             })
             
