@@ -27,7 +27,7 @@ export default class UserController {
             const user = await userRepository.findOne({ id }, { 
                 relations: ['post_comments', 'post_star', 'role', 'follows'] 
             });
-            const {post_comments, post_star, follows, ...props } = user;
+            const {post_comments, post_star, follows, password, ...props } = user;
             const data = {
                 ...props,
                 post_comments: post_comments.length,
@@ -92,18 +92,17 @@ export default class UserController {
     static async userUnfollow(ctx: BaseContext){
         const userRepository = getRepository(User);
         const user = ctx.state.user;
-        const id = +ctx.params.id;
+        const uid = +ctx.params.id;
 
         try{
             const self = await userRepository.findOne({id: user.id}, { relations: ['follows'] });
-            const follow = await userRepository.findOne({id});
 
             if(!user){
                 return new Response(401, "关注失败，用户不存在").toObject(ctx);
             }
 
             const restFollows = self.follows.filter((v: any) => {
-                return v.id !== id;
+                return v.id !== uid;
             });
 
             if(restFollows.length === self.follows.length ){
@@ -113,7 +112,7 @@ export default class UserController {
             }
 
             const userToSaved = {
-                ...user,
+                ...self,
                 follows: restFollows
             }
             
@@ -170,7 +169,6 @@ export default class UserController {
             })
 
             ctx.body = {
-                message: "",
                 data
             };
         }catch(err){
@@ -189,10 +187,15 @@ export default class UserController {
             const user = await userRepository.findOne({ id }, { 
                 relations: ['post_star', 'post_star.cover', 'post_star.user', 'post_star.comments'] 
             });
-            const {post_star} = user;
+            let {post_star} = user;
+
+            post_star = post_star.map(v => {
+                delete v.user.password;
+                v.comments = v.comments.length;    
+                return v;
+            })
             
             ctx.body = {
-                message: "",
                 data: post_star
             };
         }catch(err){
